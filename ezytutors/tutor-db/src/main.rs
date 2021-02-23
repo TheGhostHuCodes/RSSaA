@@ -1,39 +1,38 @@
-use chrono::NaiveDateTime;
+use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
 use sqlx::postgres::PgPool;
 use std::env;
 use std::io;
+use std::sync::Mutex;
 
-#[derive(Debug)]
-pub struct Course {
-    pub course_id: i32,
-    pub tutor_id: i32,
-    pub course_name: String,
-    pub posted_time: Option<NaiveDateTime>,
-}
+mod handlers;
+mod models;
+mod routes;
+mod state;
+
+use routes::*;
+use state::AppState;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
     dotenv().ok();
+
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
     let db_pool = PgPool::new(&database_url).await.unwrap();
+    // Construct App State.
+    let shared_data = web::Data::new(AppState {
+        health_check_response: "I'm good. You've already asked me ".to_string(),
+        visit_count: Mutex::new(0),
+        db: db_pool,
+    });
+    // Construct app and configure routes.
+    let app = move || {
+        App::new()
+            .app_data(shared_data.clone())
+            .configure(general_routes)
+            .configure(course_routes)
+    };
 
-    let course_rows = sqlx::query!(
-        r#"SELECT course_id, tutor_id, course_name, posted_time FROM ezy_course_c4 WHERE course_id = $1"#,
-        1
-    ).fetch_all(&db_pool)
-    .await.unwrap();
-
-    let mut courses_list = vec![];
-    for course_row in course_rows {
-        courses_list.push(Course {
-            course_id: course_row.course_id,
-            tutor_id: course_row.tutor_id,
-            course_name: course_row.course_name,
-            posted_time: Some(chrono::NaiveDateTime::from(course_row.posted_time.unwrap())),
-        })
-    }
-    println!("Courses = {:?}", courses_list);
-
-    Ok(())
+    // Start HTTP server
+    HttpServer::new(app).bind("127.0.0.1:3000")?.run().await
 }
