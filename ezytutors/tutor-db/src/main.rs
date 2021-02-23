@@ -5,6 +5,7 @@ use std::env;
 use std::io;
 use std::sync::Mutex;
 
+mod db_access;
 mod handlers;
 mod models;
 mod routes;
