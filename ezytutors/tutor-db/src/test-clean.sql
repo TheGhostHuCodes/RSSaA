@@ -1,4 +1,4 @@
 DELETE FROM
-    ezy_course_c4
+    ezy_course_c5
 WHERE
     course_id = 3;
