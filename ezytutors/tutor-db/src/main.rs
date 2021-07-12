@@ -6,6 +6,7 @@ use std::io;
 use std::sync::Mutex;
 
 mod db_access;
+mod errors;
 mod handlers;
 mod models;
 mod routes;
