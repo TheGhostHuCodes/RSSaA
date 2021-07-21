@@ -1,8 +1,7 @@
-use super::models::Course;
+use crate::errors::EzyTutorError;
+use crate::models::course::Course;
 use chrono;
 use sqlx::postgres::PgPool;
-
-use super::errors::EzyTutorError;
 
 pub async fn get_courses_for_tutor_db(
     pool: &PgPool,

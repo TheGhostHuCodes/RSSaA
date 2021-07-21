@@ -1,8 +1,7 @@
+use crate::db_access::course::*;
 use crate::errors::EzyTutorError;
-
-use super::db_access::*;
-use super::models::Course;
-use super::state::AppState;
+use crate::models::course::Course;
+use crate::state::AppState;
 use actix_web::{web, HttpResponse};
 use std::convert::TryFrom;
 
